@@ -1,0 +1,157 @@
+<!-- 题目 5：综合题 - 防抖搜索框
+实现一个带防抖功能的搜索框：
+HTML 结构：一个 input 输入框、一个用于展示搜索结果的 div；
+功能要求：
+输入框输入内容时，触发防抖处理（防抖延迟 300ms）；
+防抖触发后，模拟调用搜索接口（用 setTimeout 模拟，返回随机生成的 5 条结果）；
+搜索结果展示在结果 div 中，若输入为空，清空结果；
+输入过程中快速连续输入，仅触发最后一次搜索；
+增加加载状态：接口请求中时，结果区显示 “搜索中...”。
+要求使用原生 JS + CSS 实现，禁止使用框架。 -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>防抖搜索框</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 50px;
+      font-family: Arial, sans-serif;
+    }
+
+    .search-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    #searchInput:focus {
+      border-color: #409eff;
+    }
+
+    #resultContainer {
+      margin-top: 15px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      min-height: 80px;
+    }
+
+    .loading {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .result-item {
+      padding: 8px 0;
+      border-bottom: 1px dashed #f0f0f0;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .empty {
+      color: #999;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="请输入搜索关键词...">
+    <div id="resultContainer" class="empty">暂无搜索结果</div>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const searchInput = document.getElementById('searchInput');
+    const resultContainer = document.getElementById('resultContainer');
+
+    /**
+     * 防抖函数封装
+     * @param {Function} fn - 要防抖的函数
+     * @param {number} delay - 防抖延迟时间（ms）
+     * @returns {Function} 防抖后的函数
+     */
+    function debounce(fn, delay) {
+      let timer = null; // 定时器标识
+      return function(...args) {
+        // 每次触发时，清除之前的定时器
+        clearTimeout(timer);
+        // 重新设置定时器，延迟执行目标函数
+        timer = setTimeout(() => {
+          fn.apply(this, args);
+          timer = null; // 执行完成后清空定时器
+        }, delay);
+      };
+    }
+
+    /**
+     * 模拟异步搜索接口
+     * @param {string} keyword - 搜索关键词
+     * @returns {Promise<Array>} 搜索结果数组
+     */
+    function searchApi(keyword) {
+      // 模拟接口请求延迟（300ms）
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // 生成5条随机模拟结果
+          const results = Array.from({ length: 5 }, (_, index) => {
+            return `搜索结果 ${index + 1}：${keyword}-${Math.floor(Math.random() * 100)}`;
+          });
+          resolve(results);
+        }, 300);
+      });
+    }
+
+    /**
+     * 处理搜索逻辑（核心函数）
+     */
+    async function handleSearch() {
+      const keyword = searchInput.value.trim();
+      // 1. 输入为空时，清空结果
+      if (!keyword) {
+        resultContainer.innerHTML = '<div class="empty">暂无搜索结果</div>';
+        return;
+      }
+
+      // 2. 显示加载状态
+      resultContainer.innerHTML = '<div class="loading">搜索中...</div>';
+
+      try {
+        // 3. 调用模拟搜索接口
+        const results = await searchApi(keyword);
+        // 4. 渲染搜索结果
+        const resultHtml = results.map(item => `<div class="result-item">${item}</div>`).join('');
+        resultContainer.innerHTML = resultHtml;
+      } catch (error) {
+        // 异常处理（模拟接口失败）
+        resultContainer.innerHTML = '<div class="empty">搜索失败，请重试</div>';
+      }
+    }
+
+    // 给输入框绑定防抖后的搜索事件（延迟300ms）
+    const debouncedSearch = debounce(handleSearch, 300);
+    searchInput.addEventListener('input', debouncedSearch);
+  </script>
+</body>
+</html>

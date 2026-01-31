@@ -1,0 +1,150 @@
+<!-- DOM 操作题 - 无限滚动列表
+// 基于原生 JS 实现一个无限滚动列表功能：
+// 页面初始渲染 10 条模拟数据（数据格式：{id: 1, content: ' 列表项 1'}）；
+// 监听页面滚动，当滚动到页面底部（距离底部≤20px）时，加载下一批 10 条模拟数据并追加到列表末尾；
+// 加载过程中显示 “加载中...” 的提示，加载完成后隐藏；
+// 避免重复加载（如滚动到底部时正在加载，不再触发新的加载）；
+// 兼容主流浏览器，禁止使用 jQuery 等框架。 -->
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>无限滚动列表</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .list-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .list-item {
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      background-color: #fff;
+    }
+
+    .list-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 15px;
+      color: #666;
+      display: none; /* 默认隐藏 */
+    }
+
+    .loading.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="list-container" id="listContainer"></div>
+  <div class="loading" id="loading">加载中...</div>
+
+  <script>
+    // 核心变量
+    const listContainer = document.getElementById('listContainer');
+    const loading = document.getElementById('loading');
+    let isLoading = false; // 标记是否正在加载，避免重复请求
+    let currentPage = 1; // 当前页码，用于生成唯一数据
+    /**
+     * 生成模拟数据
+     * @param {number} page - 当前页码
+     * @returns {Array} 10条模拟数据
+     */
+    function generateMockData(page) {
+      const data = [];
+      const startId = (page - 1) * 10 + 1;
+      for (let i = 0; i < 20; i++) {
+        data.push({
+          id: startId + i,
+          content: `列表项 ${startId + i}`
+        });
+      }
+      return data;
+    }
+
+    /**
+     * 渲染列表项
+     * @param {Array} data - 要渲染的数据
+     */
+    function renderList(data) {
+      data.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'list-item';
+        itemElement.innerHTML = `<p>ID: ${item.id}</p><p>内容: ${item.content}</p>`;
+        listContainer.appendChild(itemElement);
+      });
+    }
+
+    /**
+     * 加载更多数据（模拟异步请求）
+     */
+    function loadMore() {
+      // 标记为加载中
+      isLoading = true;
+      loading.classList.add('show');
+
+      // 模拟接口请求延迟（500ms）
+      setTimeout(() => {
+        const newData = generateMockData(currentPage);
+        renderList(newData);
+        currentPage++; // 页码自增
+
+        // 加载完成，重置状态
+        isLoading = false;
+        loading.classList.remove('show');
+      }, 500);
+    }
+
+    //判断是否滚动到页面底部
+    function isReachBottom() {
+      // 可视区域高度
+      const clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+      // 滚动条滚动的距离
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      // 文档总高度
+      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      // 距离底部≤20px 判定为到达底部
+      return scrollTop + clientHeight >= scrollHeight - 20;
+    }
+
+    // 滚动事件处理函数
+    function handleScroll() {
+      // 非加载中 且 到达底部 才触发加载
+      if (!isLoading && isReachBottom()) {
+        loadMore();
+      }
+    }
+
+    // 初始化：加载第一页数据
+    loadMore();
+
+    // 监听滚动事件（使用passive优化滚动性能）
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    //Passive EventListeners:就是告诉前页面内的事件监听器内部是否会调用preventDefaut函数来阻止事件的默认行为，
+    // 以便浏览器根据这个信息更好地做出决策来优化页面性能。当属性passive的值为true的时候，代表该监听器内部不会调用preventDefaut函数来阻止默认滑动行为，
+    // Chrome浏览器称这类型的监听器为被动(passive)监听器。目前Chrome主要利用该特性来优化页面的滑动性能，所以Passive Event Listeners特性当前仅支持mousewheel/touch相关事件。
+
+
+  </script>
+</body>
+</html>

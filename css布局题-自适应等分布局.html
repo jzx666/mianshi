@@ -1,0 +1,46 @@
+<!-- 题目3：CSS/布局题 - 自适应等分布局
+实现一个等分布局，要求：
+
+容器宽度自适应，内部有4个子元素
+
+子元素等宽排列，间距为20px
+
+当容器宽度变化时，子元素始终等分且保持间距
+
+第一项和最后一项与容器边缘无间距
+
+使用Flexbox或Grid实现，兼容现代浏览器
+
+请写出完整的HTML和CSS代码。 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <div class="item">1</div>
+        <div class="item">2</div>
+        <div class="item">3</div>
+        <div class="item">4</div>
+    </div>
+    
+</body>
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        /* display: flex; */
+        width: 100%;
+    }
+    .item {
+        /* flex: 1; */
+        margin: 0 20px;
+        text-align: center;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
+</html>
